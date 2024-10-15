@@ -1,76 +1,10 @@
 import asyncio as aio
 import keyboard
-import re
 import time
-from os import system, get_terminal_size
+from os import system
 from utils.utils import *
+from elements.elements import *
 
-floor = 5
-
-class Element ():
-    def __init__(self, imap, pos) -> None:
-        self.pos: tuple = pos
-        self.imap: list = self.process_imap(imap)
-        pass
-    def process_imap(self, imap) -> list:
-        return imap
-    def draw_bit(self, bitpos: tuple) -> bool:
-        active_cell = False
-        cell_value = ""
-        bit_y, bit_x = bitpos
-        my_y, my_x = self.pos
-        for i in range(len(self.imap)):
-            for j in range(len(self.imap[i])):
-
-                cell: str = self.imap[i][j]
-                if cell != " " and my_x + j == bit_x and my_y + i == bit_y:
-                    active_cell = True
-                    cell_value: str = cell
-                if active_cell: break
-            if active_cell: break
-
-        if active_cell: print(cell_value, end="")
-        return active_cell
-    pass
-
-class Tree (Element):
-    def __init__(self, imap, pos) -> None:
-        super().__init__(imap, pos)
-
-    def process_imap(self, imap):
-        new_imap = []
-
-        for row in imap:
-            new_row = []
-
-            for cell in row:
-                new_cell = ""
-                if cell != " ":
-                    if (cell in ["╭","─","╮","╰","╯","│"]) : new_cell += "\033[32m"
-                    elif (cell in ["*"]) : new_cell += "\033[31m"
-                    else: new_cell += "\033[33m"
-                new_cell += cell
-                if cell!=" ": new_cell += "\033[0m"
-                new_row.append(new_cell)
-
-            new_imap.append(new_row)
-
-        return new_imap
-    pass
-
-elements: list[Element] = [
-    Tree(
-        [
-            "╭──────╮  ",
-            "│    * │  ",
-            "│ *  ╭───╮",
-            "╰────│   │",
-            "  ╘╣║╰───╯",
-            "   ╨╨     ",
-        ],
-        (height - floor - 5, int(width/2) - 5)
-    )
-]
 
 def draw_bg_elements(pos):
     return any(element.draw_bit(pos) for element in elements)
@@ -208,22 +142,31 @@ class Nanventure():
         if self.scene == 0: self.scene_main_menu()
         elif self.scene == 1: self.scene_game()
 
+    def draw_second(self):
+        secs = "second: "+str(self.second)
+        top_line(len(secs)+2)
+        text_line("second: "+str(self.second), len(secs)+1)
+        bottom_line(len(secs)+2)
+
     def run(self):
         while True:
 
             system("clear")
             padding_top()
-            self.draw_scene()
-            top_line()
-            text_line("second: "+str(self.second))
-            bottom_line()
 
-            if self.exit: break;
+            self.draw_second()
+
+            self.draw_scene()
+
+            if self.exit: break
 
             self.second += 1
 
             time.sleep(0.1)
 
-def main(): Nanventure().run()
+def main():
+    print("\033[?1049h")
+    Nanventure().run()
+    print("\033[?1049l")
 
 if __name__ == "__main__": main()
